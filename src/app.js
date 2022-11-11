@@ -3,6 +3,7 @@ import cors from "cors"
 import dotvenv from "dotenv"
 import { MongoClient } from "mongodb"
 import joi from "joi"
+import dayjs from "dayjs"
 
 // configs
 dotvenv.config()
@@ -40,7 +41,13 @@ server.post("/participants", async (req, res) => {
         const participants = await colParticipants.find({}).toArray()
         if (!participants.find(p => p.name === name)) {
             await colParticipants.insertOne({ name, lastStatus: Date.now() })
-            await colMessages.insertOne({ from: name, to: "Todos", text: "entra na sala...", type: "status", time: "HH:MM:SS" })
+            await colMessages.insertOne({
+                from: name,
+                to: "Todos",
+                text: "entra na sala...",
+                type: "status",
+                time: dayjs().format("HH:mm:ss")
+            })
             res.sendStatus(201)
             return
         }
