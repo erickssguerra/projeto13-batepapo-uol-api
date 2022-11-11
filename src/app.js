@@ -2,6 +2,7 @@ import express, { json } from "express"
 import cors from "cors"
 import dotvenv from "dotenv"
 import { MongoClient } from "mongodb"
+import joi from "joi"
 
 // configs
 dotvenv.config()
@@ -18,12 +19,22 @@ const server = express()
 server.use(cors())
 server.use(json())
 
+// validation schemas
+const participantSchema = joi.object({
+    name: joi.required(),
+})
+
+// route participants
 server.post("/participants", async (req, res) => {
-    const name = req.body.name
-    if (!name) {
-        res.sendStatus(422)
+    const { name } = req.body
+
+    const validation = participantSchema.validate({ name }, { abortEarly: false })
+    if (validation.error) {
+        const errors = validation.error.details.map((detail) => detail.message)
+        res.status(422).send(errors)
         return
     }
+
     try {
         const participants = await colParticipants.find({}).toArray()
         if (!participants.find(p => p.name === name)) {
@@ -52,5 +63,5 @@ server.get("/participants", async (req, res) => {
 
 // connection
 server.listen(5000, () => {
-    console.log("You're connect to port 5000!")
+    console.log(`You're connect in port 5000!`)
 })
