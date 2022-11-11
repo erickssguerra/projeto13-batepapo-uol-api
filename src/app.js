@@ -6,22 +6,28 @@ import { MongoClient } from "mongodb"
 // configs
 dotvenv.config()
 const mongoClient = new MongoClient(process.env.MONGO_URI)
-await mongoClient.connect()
+try {
+    await mongoClient.connect()
+    console.log("MongoDB Conected!")
+} catch (err) {
+    console.log(err)
+}
 const dbBatepapoUOL = mongoClient.db("batepapo-uol-api")
-const app = express()
-app.use(cors())
-app.use(json())
+const colParticipants = dbBatepapoUOL.collection("participants")
+const server = express()
+server.use(cors())
+server.use(json())
 
-app.post("/participants", async (req, res) => {
+server.post("/participants", async (req, res) => {
     const name = req.body.name
     if (!name) {
         res.sendStatus(422)
         return
     }
     try {
-        const participants = await dbBatepapoUOL.collection("participants").find({}).toArray()
+        const participants = await colParticipants.find({}).toArray()
         if (!participants.find(p => p.name === name)) {
-            await dbBatepapoUOL.collection("participants").insertOne({ name: name, lastStatus: Date.now() })
+            await colParticipants.insertOne({ name, lastStatus: Date.now() })
             res.sendStatus(201)
         }
         else {
@@ -34,9 +40,9 @@ app.post("/participants", async (req, res) => {
     }
 })
 
-app.get("/participants", async (req, res) => {
+server.get("/participants", async (req, res) => {
     try {
-        const participants = await dbBatepapoUOL.collection("participants").find({}).toArray()
+        const participants = await colParticipants.find({}).toArray()
         res.send(participants)
     } catch (err) {
         console.log(err)
@@ -45,6 +51,6 @@ app.get("/participants", async (req, res) => {
 })
 
 // connection
-app.listen(5000, () => {
+server.listen(5000, () => {
     console.log("You're connect to port 5000!")
 })
