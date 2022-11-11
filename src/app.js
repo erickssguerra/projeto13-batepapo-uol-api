@@ -95,15 +95,22 @@ server.post("/messages", async (req, res) => {
     const { to, text, type } = req.body
     const from = req.headers.user
 
-
-
     const validation = messageSchema.validate({ to, text, type }, { abortEarly: false })
     if (validation.error) {
         const errorMessage = validation.error.details.map((detail) => detail.message)
         res.status(422).send(errorMessage)
         return
     }
-
+    try {
+        const foundParticipant = await colParticipants.findOne({ name: from })
+        if (!foundParticipant) {
+            res.status(422).send("Usuário não encontrado")
+            return
+        }
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
 })
 
 // connection
