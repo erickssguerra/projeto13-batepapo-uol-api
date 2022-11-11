@@ -15,6 +15,7 @@ try {
 }
 const dbBatepapoUOL = mongoClient.db("batepapo-uol-api")
 const colParticipants = dbBatepapoUOL.collection("participants")
+const colMessages = dbBatepapoUOL.collection("messages")
 const server = express()
 server.use(cors())
 server.use(json())
@@ -30,8 +31,8 @@ server.post("/participants", async (req, res) => {
 
     const validation = participantSchema.validate({ name }, { abortEarly: false })
     if (validation.error) {
-        const messages = validation.error.details.map((detail) => detail.message)
-        res.status(422).send(messages)
+        const message = validation.error.details.map((detail) => detail.message)
+        res.status(422).send(message)
         return
     }
 
@@ -39,11 +40,12 @@ server.post("/participants", async (req, res) => {
         const participants = await colParticipants.find({}).toArray()
         if (!participants.find(p => p.name === name)) {
             await colParticipants.insertOne({ name, lastStatus: Date.now() })
+            await colMessages.insertOne({ from: name, to: "Todos", text: "entra na sala...", type: "status", time: "HH:MM:SS" })
             res.sendStatus(201)
             return
         }
         else {
-            res.status(409).send("Usuário já cadastrado")
+            res.status(409).send({ message: "Usuário já cadastrado" })
             return
         }
     }
@@ -62,6 +64,9 @@ server.get("/participants", async (req, res) => {
         res.sendStatus(500)
     }
 })
+
+// route messages
+
 
 // connection
 server.listen(5000, () => {
