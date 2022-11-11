@@ -10,7 +10,7 @@ dotvenv.config()
 const mongoClient = new MongoClient(process.env.MONGO_URI)
 try {
     await mongoClient.connect()
-    console.log("MongoDB Conected!")
+    console.log("MongoDB conected!")
 } catch (err) {
     console.log(err)
 }
@@ -82,10 +82,30 @@ server.get("/participants", async (req, res) => {
 
 // route messages
 server.get("/messages", async (req, res) => {
+    const { user } = req.headers
+    const limit  = parseInt(req.query.limit)
+
     try {
-        const messages = await colMessages.find({}).toArray()
-        res.send(messages).status(200)
-    } catch (err) {
+        const filteredMessages = await colMessages
+            .find({
+                $or: [
+                    { "from": user },
+                    { "type": "message" },
+                    { "to": user },
+                    { "to": "Todos" }
+                ]
+            })
+            .toArray()
+        if (limit || limit > 0) {
+            res.status(200).send(filteredMessages.slice(-limit))
+            return
+        }
+        else {
+            res.status(200).send(filteredMessages)
+            return
+        }
+    }
+    catch (err) {
         console.log(err)
         res.sendStatus(500)
     }
