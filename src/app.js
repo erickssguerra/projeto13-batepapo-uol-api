@@ -15,11 +15,13 @@ try {
     console.log(err)
 }
 const dbBatepapoUOL = mongoClient.db("batepapo-uol-api")
-const colParticipants = dbBatepapoUOL.collection("participants")
-const colMessages = dbBatepapoUOL.collection("messages")
 const server = express()
 server.use(cors())
 server.use(json())
+
+// collections
+const colParticipants = dbBatepapoUOL.collection("participants")
+const colMessages = dbBatepapoUOL.collection("messages")
 
 // validation schemas
 const participantSchema = joi.object({
