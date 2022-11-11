@@ -96,20 +96,34 @@ server.post("/messages", async (req, res) => {
     const from = req.headers.user
 
     const validation = messageSchema.validate({ to, text, type }, { abortEarly: false })
+
     if (validation.error) {
         const errorMessage = validation.error.details.map((detail) => detail.message)
         res.status(422).send(errorMessage)
         return
     }
+
     try {
-        const foundParticipant = await colParticipants.findOne({ name: from })
-        if (!foundParticipant) {
-            res.status(422).send("Usuário não encontrado")
+        const foundSender = await colParticipants.findOne({ name: from })
+        if (!foundSender) {
+            res.status(422).send("Você não está mais logado!")
             return
         }
-    } catch (err) {
+
+        await colMessages.insertOne({
+            from,
+            to,
+            text,
+            type,
+            time: dayjs().format("HH:mm:ss")
+        })
+        res.sendStatus(201)
+        return
+    }
+    catch (err) {
         console.log(err)
         res.sendStatus(500)
+        return
     }
 })
 
