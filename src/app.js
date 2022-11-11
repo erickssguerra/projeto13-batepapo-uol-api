@@ -75,7 +75,15 @@ server.get("/participants", async (req, res) => {
 })
 
 // route messages
-
+server.get("/messages", async (req, res) => {
+    try {
+        const messages = await colMessages.find({}).toArray()
+        res.send(messages).status(200)
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
 
 // connection
 server.listen(5000, () => {
