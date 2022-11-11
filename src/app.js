@@ -21,17 +21,17 @@ server.use(json())
 
 // validation schemas
 const participantSchema = joi.object({
-    name: joi.required(),
+    name: joi.string().required()
 })
 
 // route participants
 server.post("/participants", async (req, res) => {
-    const { name } = req.body
+    const name = req.body.name
 
     const validation = participantSchema.validate({ name }, { abortEarly: false })
     if (validation.error) {
-        const errors = validation.error.details.map((detail) => detail.message)
-        res.status(422).send(errors)
+        const messages = validation.error.details.map((detail) => detail.message)
+        res.status(422).send(messages)
         return
     }
 
@@ -40,9 +40,11 @@ server.post("/participants", async (req, res) => {
         if (!participants.find(p => p.name === name)) {
             await colParticipants.insertOne({ name, lastStatus: Date.now() })
             res.sendStatus(201)
+            return
         }
         else {
-            res.send("Usuário já cadastrado").status(409)
+            res.status(409).send("Usuário já cadastrado")
+            return
         }
     }
     catch (err) {
