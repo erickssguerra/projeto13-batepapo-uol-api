@@ -160,7 +160,14 @@ server.delete("/messages", async (req, res) => {
             res.status(401).send({ message: "Mensagem não encontrada." })
             return
         }
-        res.status(200).send(message)
+        if (message.from !== user) {
+            res.status(401).send({ message: "Usuário não é o emissário da mensagem" })
+            return
+        }
+        if (message.from === user) {
+            res.status(200).send({ message: "Mensagem apagada com sucesso!" })
+            return
+        }
     }
     catch (err) {
         console.log(err)
