@@ -147,6 +147,16 @@ server.post("/messages", async (req, res) => {
     }
 })
 
+server.delete("/messages", async (req, res) => {
+    const { user } = req.headers
+    const { id } = req.query
+    if (!user || !id) {
+        res.status(400).send({ message: "Usuário ou id faltando." })
+        return
+    }
+    res.sendStatus(200)
+})
+
 // route status 
 server.post("/status", async (req, res) => {
     const { user } = req.headers
