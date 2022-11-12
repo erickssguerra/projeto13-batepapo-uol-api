@@ -34,7 +34,7 @@ const messageSchema = joi.object({
     type: joi.string().valid("message", "private_message")
 })
 
-// route participants
+// routes participants
 server.post("/participants", async (req, res) => {
     const { name } = req.body
 
@@ -80,7 +80,7 @@ server.get("/participants", async (req, res) => {
     }
 })
 
-// route messages
+// routes messages
 server.get("/messages", async (req, res) => {
     const { user } = req.headers
     const limit = parseInt(req.query.limit)
@@ -147,7 +147,7 @@ server.post("/messages", async (req, res) => {
     }
 })
 
-// route status - update status
+// routes status - update status
 server.post("/status", async (req, res) => {
     const { user } = req.headers
     try {
@@ -179,7 +179,7 @@ setInterval(async () => {
                     from: participants[i].name,
                     to: "Todos",
                     text: "sai da sala...",
-                    type: "message",
+                    type: "status",
                     time: dayjs().format("HH:mm:ss")
                 }
                 await colMessages.insertOne(leavingMessage)
