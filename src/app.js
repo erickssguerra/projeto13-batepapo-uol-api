@@ -147,7 +147,7 @@ server.post("/messages", async (req, res) => {
     }
 })
 
-// route status
+// route status - update status
 server.post("/status", async (req, res) => {
     const { user } = req.headers
     try {
@@ -167,6 +167,30 @@ server.post("/status", async (req, res) => {
         res.sendStatus(500)
     }
 })
+
+// kick inactive users
+setInterval(async () => {
+    const currentStatus = Date.now()
+    try {
+        const participants = await colParticipants.find({}).toArray()
+        for (let i = 0; i < participants.length; i++) {
+            if (currentStatus - participants[i].lastStatus > 10000) {
+                const leavingMessage = {
+                    from: participants[i].name,
+                    to: "Todos",
+                    text: "sai da sala...",
+                    type: "message",
+                    time: dayjs().format("HH:mm:ss")
+                }
+                await colMessages.insertOne(leavingMessage)
+                await colParticipants.deleteOne(participants[i])
+            }
+        }
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+}, 15000)
 
 // connection
 server.listen(5000, () => {
