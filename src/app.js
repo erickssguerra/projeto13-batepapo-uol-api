@@ -147,7 +147,28 @@ server.post("/messages", async (req, res) => {
     }
 })
 
+// route status
+server.post("/status", async (req, res) => {
+    const { user } = req.headers
+    try {
+        const isUserOnline = await colParticipants.findOne({ name: user })
+        if (!isUserOnline) {
+            res.status(404).send({ message: "Usuário não está online." })
+        }
+        else {
+            await colParticipants.updateOne(
+                { name: user }, // filter 
+                { $set: { lastStatus: Date.now() } } // updated field
+            )
+            res.status(200).send({ message: "Status atualizado." })
+        }
+    } catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
+})
+
 // connection
 server.listen(5000, () => {
-    console.log(`You're connect in port 5000!`)
+    console.log("Conected in port 5000!")
 })
