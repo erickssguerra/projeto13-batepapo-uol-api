@@ -83,7 +83,7 @@ server.get("/participants", async (req, res) => {
 // route messages
 server.get("/messages", async (req, res) => {
     const { user } = req.headers
-    const limit  = parseInt(req.query.limit)
+    const limit = parseInt(req.query.limit)
 
     try {
         const filteredMessages = await colMessages
