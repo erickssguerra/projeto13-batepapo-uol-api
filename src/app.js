@@ -1,7 +1,7 @@
 import express, { json } from "express"
 import cors from "cors"
 import dotvenv from "dotenv"
-import { MongoClient } from "mongodb"
+import { MongoClient, ObjectId } from "mongodb"
 import joi from "joi"
 import dayjs from "dayjs"
 
@@ -147,7 +147,7 @@ server.post("/messages", async (req, res) => {
     }
 })
 
-// routes status - update status
+// route status 
 server.post("/status", async (req, res) => {
     const { user } = req.headers
     try {
