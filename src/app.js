@@ -154,7 +154,18 @@ server.delete("/messages", async (req, res) => {
         res.status(400).send({ message: "Usuário ou id faltando." })
         return
     }
-    res.sendStatus(200)
+    try {
+        const message = await colMessages.findOne({ _id: ObjectId(id) })
+        if (!message) {
+            res.status(401).send({ message: "Mensagem não encontrada." })
+            return
+        }
+        res.status(200).send(message)
+    }
+    catch (err) {
+        console.log(err)
+        res.sendStatus(500)
+    }
 })
 
 // route status 
