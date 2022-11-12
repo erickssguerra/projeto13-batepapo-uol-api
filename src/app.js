@@ -147,11 +147,15 @@ server.post("/messages", async (req, res) => {
     }
 })
 
-server.delete("/messages", async (req, res) => {
+server.delete("/messages/:id", async (req, res) => {
     const { user } = req.headers
-    const { id } = req.query
-    if (!user || !id) {
-        res.status(400).send({ message: "Usuário ou id faltando." })
+    const { id } = req.params
+    if (id.length < 24) {
+        res.status(400).send({ message: "ID inválido" })
+        return
+    }
+    if (!user) {
+        res.status(400).send({ message: "Usuário está faltando." })
         return
     }
     try {
@@ -165,6 +169,7 @@ server.delete("/messages", async (req, res) => {
             return
         }
         if (message.from === user) {
+            await colMessages.deleteOne({ _id: ObjectId(id) })
             res.status(200).send({ message: "Mensagem apagada com sucesso!" })
             return
         }
