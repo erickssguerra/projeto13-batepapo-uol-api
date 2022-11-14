@@ -37,10 +37,10 @@ const messageSchema = joi.object({
 
 // routes participants
 server.post("/participants", async (req, res) => {
-    let { name } = req.body
-    name = stripHtml(name).result
+    const { name } = req.body
+    const sanitizedName = stripHtml(name).result
 
-    const validation = participantSchema.validate({ name }, { abortEarly: false })
+    const validation = participantSchema.validate({ name: sanitizedName }, { abortEarly: false })
     if (validation.error) {
         const errorMessage = validation.error.details.map((detail) => detail.message)
         res.status(422).send(errorMessage)
@@ -49,10 +49,10 @@ server.post("/participants", async (req, res) => {
 
     try {
         const participants = await colParticipants.find({}).toArray()
-        if (!participants.find(p => p.name === name)) {
-            await colParticipants.insertOne({ name, lastStatus: Date.now() })
+        if (!participants.find(p => p.name === sanitizedName)) {
+            await colParticipants.insertOne({ name: sanitizedName, lastStatus: Date.now() })
             await colMessages.insertOne({
-                from: name,
+                from: sanitizedName,
                 to: "Todos",
                 text: "entra na sala...",
                 type: "status",
@@ -116,6 +116,8 @@ server.get("/messages", async (req, res) => {
 server.post("/messages", async (req, res) => {
     const { to, text, type } = req.body
     const from = req.headers.user
+    const sanitizedFrom = stripHtml(from).result
+    const sanitizedText = stripHtml(text).result
 
     const validation = messageSchema.validate({ to, text, type }, { abortEarly: false })
 
@@ -126,16 +128,16 @@ server.post("/messages", async (req, res) => {
     }
 
     try {
-        const foundSender = await colParticipants.findOne({ name: from })
+        const foundSender = await colParticipants.findOne({ name: sanitizedFrom })
         if (!foundSender) {
             res.status(422).send("Você não está mais logado!")
             return
         }
 
         await colMessages.insertOne({
-            from,
+            from: sanitizedFrom,
             to,
-            text,
+            text: sanitizedText,
             type,
             time: dayjs().format("HH:mm:ss")
         })
@@ -185,14 +187,15 @@ server.delete("/messages/:id", async (req, res) => {
 // route status 
 server.post("/status", async (req, res) => {
     const { user } = req.headers
+    const sanitizedUser = stripHtml(user).result
     try {
-        const isUserOnline = await colParticipants.findOne({ name: user })
+        const isUserOnline = await colParticipants.findOne({ name: sanitizedUser })
         if (!isUserOnline) {
             res.status(404).send({ message: "Usuário não está online." })
         }
         else {
             await colParticipants.updateOne(
-                { name: user }, // filter 
+                { name: sanitizedUser }, // filter 
                 { $set: { lastStatus: Date.now() } } // updated field
             )
             res.status(200).send({ message: "Status atualizado." })
