@@ -4,6 +4,7 @@ import dotvenv from "dotenv"
 import { MongoClient, ObjectId } from "mongodb"
 import joi from "joi"
 import dayjs from "dayjs"
+import { stripHtml } from "string-strip-html"
 
 // configs
 dotvenv.config()
@@ -36,7 +37,8 @@ const messageSchema = joi.object({
 
 // routes participants
 server.post("/participants", async (req, res) => {
-    const { name } = req.body
+    let { name } = req.body
+    name = stripHtml(name).result
 
     const validation = participantSchema.validate({ name }, { abortEarly: false })
     if (validation.error) {
